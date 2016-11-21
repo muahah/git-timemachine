@@ -224,25 +224,29 @@ When passed a GIT-BRANCH, lists revisions from that branch."
 	 (new-line nil)
 	 (file git-timemachine-file)
 	 (reverse (< curr-rev-number new-rev-number)))
-    ;; Get new current line number using `git-blame`
-    (with-temp-buffer
-      (if reverse
-	  (process-file vc-git-program nil t nil "blame" "--reverse" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" current-commit new-commit))
-	(process-file vc-git-program nil t nil "blame" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" new-commit current-commit)))
-      (goto-char (point-min))
-      ;; If end-of-buffer problem
-      (when (search-forward-regexp "^fatal: file .+ has only .+ lines" nil t)
-	(setq current-line (- current-line 1))
-	(erase-buffer)
+    ;; If no commit change, do nothing
+    (if (= curr-rev-number new-rev-number)
+	current-line
+      ;; Get new current line number using `git-blame`
+      (with-temp-buffer
 	(if reverse
 	    (process-file vc-git-program nil t nil "blame" "--reverse" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" current-commit new-commit))
-	  (process-file vc-git-program nil t nil "blame" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" new-commit current-commit))))
-      (goto-char (point-min))
-      (search-forward-regexp "^[^ ]+ \\([^ ]+\\)")
-      (setq new-line (string-to-number (match-string 1)))
-      ;; In case git blame doesn't give what we expect
-      (when (= new-line 0) (setq new-line current-line))
-      new-line)))
+	  (process-file vc-git-program nil t nil "blame" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" new-commit current-commit)))
+	(goto-char (point-min))
+	;; If end-of-buffer problem
+	(when (search-forward-regexp "^fatal: file .+ has only .+ lines" nil t)
+	  (setq current-line (- current-line 1))
+	  (erase-buffer)
+	  (if reverse
+	      (process-file vc-git-program nil t nil "blame" "--reverse" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" current-commit new-commit))
+	    (process-file vc-git-program nil t nil "blame" "-n" (format "-L %s,%s" current-line current-line) file (format "%s..%s" new-commit current-commit))))
+	(goto-char (point-min))
+	(search-forward-regexp "^[^ ]+ \\([^ ]+\\)")
+	(setq new-line (string-to-number (match-string 1)))
+	;; In case git blame doesn't give what we expect
+	(when (= new-line 0) (setq new-line current-line))
+	new-line))))
+
 (defun git-timemachine--get-cursor-position ()
   "Return the cursor line number in respect to the
 current window first line"
