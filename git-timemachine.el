@@ -237,6 +237,17 @@ When passed a GIT-BRANCH, lists revisions from that branch."
       ;; In case git blame doesn't give what we expect
       (when (= new-line 0) (setq new-line current-line))
       new-line)))
+(defun git-timemachine--get-cursor-position ()
+  "Return the cursor line number in respect to the
+current window first line"
+  (let* ((win-point-min (save-excursion (move-to-window-line 0) (point)))
+	 (cur-pos (count-screen-lines win-point-min (point))))
+    cur-pos))
+
+(defun git-timemachine--set-cursor-position (POS)
+  "Set the cursor position on the POS line in
+respect to the windows first line"
+  (recenter POS))
 
 (defun git-timemachine-abbreviate (revision)
  "Return REVISION abbreviated to `git-timemachine-abbreviation-length' chars."
