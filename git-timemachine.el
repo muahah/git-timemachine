@@ -248,15 +248,15 @@ When passed a GIT-BRANCH, lists revisions from that branch."
 	new-line))))
 
 (defun git-timemachine--get-cursor-position ()
-  "Return the cursor line number in respect to the
+  "Return the cursor visual line number with respect to the
 current window first line"
   (let* ((win-point-min (save-excursion (move-to-window-line 0) (point)))
 	 (cur-pos (count-screen-lines win-point-min (point))))
     cur-pos))
 
 (defun git-timemachine--set-cursor-position (POS)
-  "Set the cursor position on the POS line in
-respect to the windows first line"
+  "Set the cursor position to the POS visual line with
+respect to the window first line"
   (recenter POS))
 
 (defun git-timemachine-abbreviate (revision)
@@ -307,14 +307,14 @@ Call with the value of 'buffer-file-name."
  "Setup a timemachine buffer and populate it from the result of GET-REVISION-FN."
  (setq git-timemachine--revisions-cache nil)
  (git-timemachine-validate (buffer-file-name))
- (let* ((git-directory (expand-file-name (vc-git-root (buffer-file-name))))
-	(file-name (buffer-file-name))
-	(timemachine-buffer (format "timemachine:%s" (buffer-name)))
-	(cur-line (line-number-at-pos))
-	(cursor-position (git-timemachine--get-cursor-position))
-	(new-line nil)
-	(mode major-mode)
-	(coding-system buffer-file-coding-system))
+ (let ((git-directory (expand-file-name (vc-git-root (buffer-file-name))))
+       (file-name (buffer-file-name))
+       (timemachine-buffer (format "timemachine:%s" (buffer-name)))
+       (cur-line (line-number-at-pos))
+       (cursor-position (git-timemachine--get-cursor-position))
+       (new-line nil)
+       (mode major-mode)
+       (coding-system buffer-file-coding-system))
   (with-current-buffer (get-buffer-create timemachine-buffer)
    (switch-to-buffer timemachine-buffer)
    (setq buffer-file-name file-name)
